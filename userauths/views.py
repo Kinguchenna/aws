@@ -93,7 +93,7 @@ def login_view(request):
         if not user:
             try:
                 user_obj = User.objects.get(email=email)
-                user = authenticate(request, username=user_obj.username, password=password)
+                user = authenticate(request, email=user_obj.email, password=password)
             except User.DoesNotExist:
                 user = None
 

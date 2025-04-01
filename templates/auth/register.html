@@ -71,26 +71,36 @@
                     </div>
 
                     <div class="input-box">
-                        <form class="row g-4">
+                        <form class="row g-4" id="registerForm" method="POST" action="{% url 'register' %}">
+                            {% csrf_token %}
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="text" class="form-control" id="fullname" placeholder="Full Name">
+                                    <input type="text" class="form-control" name="name" id="name" placeholder="Full Name">
                                     <label for="fullname">Full Name</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="email" class="form-control" id="email" placeholder="Email Address">
+                                    <input type="email" class="form-control" name="email" id="email" placeholder="Email Address">
                                     <label for="email">Email Address</label>
                                 </div>
                             </div>
 
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating">
-                                    <input type="password" class="form-control" id="password" placeholder="Password">
+                                    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
                                     <label for="password">Password</label>
                                 </div>
                             </div>
+
+
+                            <div class="col-12">
+                                <div class="form-floating theme-form-floating">
+                                    <input type="password" class="form-control" name="confirm_password" id="confirm_password" placeholder="Confirm Password">
+                                    <label for="password">Confirm Password</label>
+                                </div>
+                            </div>
+                            
 
                             <div class="col-12">
                                 <div class="forgot-box">
@@ -104,9 +114,10 @@
                             </div>
 
                             <div class="col-12">
-                                <button class="btn btn-animation w-100" type="submit">Sign Up</button>
+                                <button class="btn btn-animation w-100" type="submit" id="submit_btn">Sign Up</button>
                             </div>
                         </form>
+                        <div id="response"></div>
                     </div>
 
                     <div class="other-log-in">
@@ -138,7 +149,7 @@
 
                     <div class="sign-up-box">
                         <h4>Already have an account?</h4>
-                        <a href="login.html">Log In</a>
+                        <a href="{% url 'login_view' %}">Log In</a>
                     </div>
                 </div>
             </div>
@@ -160,5 +171,39 @@
 <!-- Bg overlay Start -->
 {% include 'partials/bgoverlay.html' %}
 <!-- Bg overlay End -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        $("#registerForm").on('submit', function (event) {
+            event.preventDefault();
+            $('#submit_btn').text("Creating account...");
+            $('#response').text(""); // Clear previous messages
+
+            // Collect form data
+            var formData = $(this).serialize();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: $(this).attr('method'),
+                data: formData,
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === "User created successfully.") {
+                        $('#response').css("color", "green").text(response.status);
+                        window.location.href = "/"; // Redirect on success
+                    } else {
+                        $('#response').css("color", "red").text(response.status);
+                    }
+                    $('#submit_btn').text("Register");
+                },
+                error: function (xhr) {
+                    $('#response').css("color", "red").text(xhr.responseText);
+                    console.error(xhr.responseText.status);
+                    $('#submit_btn').text("Register");
+                }
+            });
+        });
+    });
+</script>
 
 {% endblock content %}
