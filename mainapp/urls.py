@@ -10,6 +10,7 @@ urlpatterns = [
     path("register", register, name="register"),
      path("login", login_view, name="login_view"),
      path("logout", logout_view, name="logout_view"),
+     path("location-list", views.gelLocationList, name="location-list"),
 ]
 
 if settings.DEBUG:
