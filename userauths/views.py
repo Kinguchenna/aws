@@ -39,32 +39,35 @@ def generate_unique_slug(name):
     return unique_slug
 
 
+
+
 def register(request):
     if request.user.is_authenticated:
         return redirect('/')
 
     if request.method == 'POST':
-        username = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        username = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
         account_type = request.POST.get('account_type', 'default')
 
         if not username or not email or not password:
             return JsonResponse({'status': 'All fields are required.'}, status=400)
+        
         username = generate_unique_slug(username)
 
         if password != confirm_password:
             return JsonResponse({'status': 'Passwords do not match.'}, status=400)
 
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             return JsonResponse({'status': 'Username already exists.'}, status=400)
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             return JsonResponse({'status': 'Email already exists.'}, status=400)
 
         try:
-            user = User.objects.create_user(username=username, email=email, password=password, account_type=account_type)
+            user = User.objects.create_user(username=username, email=email, password=password)
             messages.success(request, f'User {username} created successfully!')
             login(request, user)
             return JsonResponse({'status': 'User created successfully.'}, status=201)
@@ -93,7 +96,7 @@ def login_view(request):
         if not user:
             try:
                 user_obj = User.objects.get(email=email)
-                user = authenticate(request, username=user_obj.username, password=password)
+                user = authenticate(request, email=user_obj.email, password=password)
             except User.DoesNotExist:
                 user = None
 

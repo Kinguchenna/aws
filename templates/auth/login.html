@@ -71,17 +71,19 @@
                     </div>
 
                     <div class="input-box">
-                        <form class="row g-4">
+                        <form id="loginForm" method="POST" action="{% url 'login_view' %}" class="row g-4">
+                            {% csrf_token %}
+                       
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating log-in-form">
-                                    <input type="email" class="form-control" id="email" placeholder="Email Address">
+                                    <input type="text" class="form-control" name="email" id="email" placeholder="Email or UserName">
                                     <label for="email">Email Address</label>
                                 </div>
                             </div>
 
                             <div class="col-12">
                                 <div class="form-floating theme-form-floating log-in-form">
-                                    <input type="password" class="form-control" id="password" placeholder="Password">
+                                    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
                                     <label for="password">Password</label>
                                 </div>
                             </div>
@@ -98,9 +100,10 @@
                             </div>
 
                             <div class="col-12">
-                                <button class="btn btn-animation w-100 justify-content-center" type="submit">Log
+                                <button class="btn btn-animation w-100 justify-content-center" type="submit"  id="submit_btn" >Log
                                     In</button>
                             </div>
+                            <div id="response"></div>
                         </form>
                     </div>
 
@@ -131,7 +134,7 @@
 
                     <div class="sign-up-box">
                         <h4>Don't have an account?</h4>
-                        <a href="sign-up.html">Sign Up</a>
+                        <a href="{% url 'register' %}">Sign Up</a>
                     </div>
                 </div>
             </div>
@@ -151,5 +154,58 @@
 <!-- Bg overlay Start -->
 {% include 'partials/bgoverlay.html' %}
 <!-- Bg overlay End -->
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+
+
+        function toggleSubmitButton(){
+                let email = $("#email").val().trim();
+                let password = $("#password").val().trim();
+                $("#submit_btn").prop("disabled", email == "" || password == "");
+        }
+        toggleSubmitButton();
+
+        $("#email, #password").on("input", toggleSubmitButton);
+        
+        $("#loginForm").on("submit", function(event){
+            event.preventDefault();
+
+            $("#submit_btn").text("Logging In...").prop("disabled","true");
+            $("#response").text("");
+
+            var formData = $(this).serialize();
+
+            $.ajax({
+               url: $(this).attr("action"),
+               method: $(this).attr("method"),
+               data: formData,
+               dataType: "json",
+               success: function (response) {
+                if (response.status === "Login successful."){
+                    $("#response").addClass("success").text(response.status);
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1000);
+                }else{
+                    $("#response").addClass("error").text(response.status);
+                }
+                $("#submit_btn").text("Login").prop("disabled", false);
+               },
+            error: function (xhr) {
+                $("#response").addClass("error").text("An error occurred. Please try again.");
+                console.error(xhr.responseText);
+                $("#submit_btn").text("Login").prop("disabled", false);
+            }
+            });
+        });  
+
+
+
+    });
+
+
+  </script>
 
 {% endblock content %}
