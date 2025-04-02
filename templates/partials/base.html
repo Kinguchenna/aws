@@ -97,6 +97,75 @@
 
     <!-- script js -->
     <script src="{% static 'assets/js/script.js' %}"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+            $("#locat_names").on("click", function(event){
+                event.preventDefault();
+                
+                let listContainer = $("#location-list");
+                let loader = '<li id="loader"><a href="javascript:void(0)"><h6>Loading...</h6></a></li>';
+    
+                // Show loader while fetching data
+                listContainer.html(loader);
+    
+                $.ajax({
+                   url: "/location-list",
+                   method: "GET",
+                   dataType: "json",
+                   success : function(response){
+                        let locations = response.deliveryLocations;
+    
+                        // Clear previous items including loader
+                        listContainer.empty();
+    
+                        // Append new locations dynamically
+                        locations.forEach(function(location) {
+                            listContainer.append(`
+                                <li class="location-item">
+                                    <a href="javascript:void(0)">
+                                        <h6 class="location-name">${location.location}</h6>
+                                        <span class="location-deliveries">${location.deliveries}</span>
+                                    </a>
+                                </li>
+                            `);
+                        });
+                   },
+                   error: function (xhr) {
+                        listContainer.html('<li><a href="javascript:void(0)"><h6>Error fetching data</h6></a></li>');
+                        console.error(xhr.responseText);
+                   }
+                });
+            });
+    
+            // Search Filter
+            $("#search-location").on("keyup", function() {
+                let searchValue = $(this).val().toLowerCase();
+                $(".location-item").each(function() {
+                    let locationText = $(this).text().toLowerCase();
+                    $(this).toggle(locationText.includes(searchValue));
+                });
+            });
+
+
+            $("#location-list").on("click", ".location-item", function() {
+                let locationText = $(this).text().trim();  // Trim to remove extra spaces
+                let locationName = $(this).find(".location-name").text().trim();
+                let deliveries = $(this).find(".location-deliveries").text().trim(); // Get deliveries count
+                alert(deliveries);
+
+              
+            });
+
+
+
+            
+        });
+    </script>
+    
+    
+
 </body>
 
 </html>
